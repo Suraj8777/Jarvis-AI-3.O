@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS SM II</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        :root {
+            --jarvis-blue: #00f3ff;
+            --hologram-glow: rgba(0, 243, 255, 0.3);
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0a1a2f, #000);
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            position: relative;
+            padding: 2rem;
+            background: rgba(10, 26, 47, 0.8);
+            border-radius: 15px;
+            border: 2px solid var(--jarvis-blue);
+            box-shadow: 0 0 30px var(--hologram-glow);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 20vh auto;
+            z-index: 2;
+        }
+
+        h1 {
+            color: var(--jarvis-blue);
+            text-shadow: 0 0 15px var(--hologram-glow);
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            animation: titleGlow 2s infinite alternate;
+        }
+
+        #start-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, #001f3f, #0074D9);
+            border: none;
+            color: var(--jarvis-blue);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--hologram-glow);
+        }
+
+        #start-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: ripple 1.5s infinite;
+        }
+
+        #output {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--jarvis-blue);
+            border-radius: 10px;
+            color: var(--jarvis-blue);
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--jarvis-blue);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 10px var(--hologram-glow); }
+            to { text-shadow: 0 0 25px var(--hologram-glow); }
+        }
+
+        @keyframes ripple {
+            to {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0;
+            }
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                transparent 0%,
+                var(--jarvis-blue) 50%,
+                transparent 100%);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        .typing-animation {
+            border-right: 2px solid var(--jarvis-blue);
+            animation: typing 1s steps(40) infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-line"></div>
+    <div class="container">
+        <h1>J.A.R.V.I.S SM II</h1>
+        <button id="start-btn">INITIALIZE SYSTEMS</button>
+        <div id="output"><div class="typing-animation"></div></div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const output = document.getElementById('output');
+        
+        // Create floating particles
+        function createParticles() {
+            for(let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                particle.style.width = particle.style.height = Math.random() * 3 + 'px';
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                document.body.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Web Speech API Integration
+        if (!('webkitSpeechRecognition' in window)) {
+            output.innerHTML = "<span style='color: #ff0000'>ERROR: Speech API not supported</span>";
+        } else {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            startBtn.addEventListener('click', () => {
+                recognition.start();
+                output.innerHTML = "<span class='typing-animation'>LISTENING...</span>";
+                startBtn.style.background = "linear-gradient(45deg, #FF4136, #FF851B)";
+                setTimeout(() => {
+                    startBtn.style.background = "linear-gradient(45deg, #001f3f, #0074D9)";
+                }, 2000);
+            });
+
+            recognition.onresult = (event) => {
+                const last = event.results.length - 1;
+                const command = event.results[last][0].transcript.toLowerCase();
+                
+                // Simulate AI processing
+                output.innerHTML = `<span class='typing-animation'>PROCESSING: "${command}"</span>`;
+                
+                setTimeout(() => {
+                    if(command.includes('hello')) {
+                        respond('SYSTEMS ONLINE. HOW MAY I ASSIST YOU, SIR?');
+                    } else if(command.includes('time')) {
+                        const time = new Date().toLocaleTimeString();
+                        respond(`CURRENT TIME IS ${time}`);
+                    } else if(command.includes('date')) {
+                        const date = new Date().toLocaleDateString();
+                        respond(`TODAY'S DATE IS ${date}`);
+                    } else if(command.includes('status')) {
+                        respond('ALL SYSTEMS NOMINAL. ARMOR READY AT 100% CAPACITY');
+                    } else {
+                        respond('COMMAND NOT RECOGNIZED. PLEASE REPEAT');
+                    }
+                }, 1500);
+            };
+
+            function respond(message) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.rate = 0.9;
+                utterance.pitch = 0.8;
+                window.speechSynthesis.speak(utterance);
+                output.innerHTML = `<span style="text-shadow: 0 0 10px var(--hologram-glow)">${message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
