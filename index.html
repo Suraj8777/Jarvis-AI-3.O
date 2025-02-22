@@ -211,3 +211,34 @@
     </script>
 </body>
 </html>
+<script>
+// Secure pattern for API integration
+const API_URL = 'https://api.yourservice.com/v1';
+let apiKey = ''; // Never hardcode keys in frontend code
+
+// Proper implementation pattern
+async function callAI(endpoint, prompt) {
+  try {
+    const response = await fetch(`${API_URL}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // API key should come from a secure backend service
+        'Authorization': `Bearer ${await getSecureKey()}`
+      },
+      body: JSON.stringify({ prompt })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    return { error: 'Failed to process request' };
+  }
+}
+
+// Example secure key retrieval (implement through backend)
+async function getSecureKey() {
+  const res = await fetch('/your-auth-endpoint');
+  const data = await res.json();
+  return data.temporaryToken;
+}
+</script>
